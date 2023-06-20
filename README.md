@@ -40,4 +40,42 @@ vi /etc/hosts
 ---------------------------
 ```
 
+## Docker, containerd 설치 (모든 master, worker node)
+### Docker 설치
+RockyLinux 는 통상적인 CentOS 방식으로 설치가 되지 않고 아래 방식을 설치해야 한다.
+
+```
+sudo dnf config-manager --add-repo=https://download.docker.com/linux/centos/docker-ce.repo
+
+sudo dnf update
+
+# 충돌나는 패키지를 교체한다.(ex, podman)
+sudo dnf install -y docker-ce docker-ce-cli containerd.io --allowerasing
+
+docker --version
+
+sudo systemctl enable docker
+sudo systemctl start docker
+sudo systemctl status docker
+
+sudo usermod -aG docker 계정아이디
+id 계정아이디
+
+```
+```
+sudo mkdir -p /etc/docker
+cat <<EOF | sudo tee /etc/docker/daemon.json
+{
+  "exec-opts": ["native.cgroupdriver=systemd"],
+  "log-driver": "json-file",
+  "log-opts": {
+    "max-size": "100m"
+  },
+  "storage-driver": "overlay2"
+}
+EOF
+
+sudo systemctl daemon-reload
+sudo systemctl restart docker
+```
 
